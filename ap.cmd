@@ -1,6 +1,6 @@
 @echo off
 rem This is a script to upload/download/list/delete file to/from apricot
-setlocal
+setlocal enabledelayedexpansion
 
 if [%1] == [] goto :usage
 set method=%1
@@ -21,21 +21,36 @@ goto :end
 :put
 echo Start uploading file(s) ...
 set files=%1
-for %%f in (%files%) do echo Uploading %%~nxf && cmd /c curl -X POST -k -u %user%:%passwd% -T %%f https://apricot.ddns.net/db/col/fs/file/%%~nxf | json -a -C msg
+for %%f in (%files%) do (
+  echo Uploading %%~nxf
+  set encode='node -e "console.log(encodeURIComponent(process.argv[1]))" "%%~nxf"'
+  for /f "delims=" %%a in (!encode!) do (
+    set encodedname=%%a
+    cmd /c curl -X POST -k -u %user%:%passwd% -T %%f https://apricot.ddns.net/db/col/fs/file/!encodedname! | json -a -C msg
+  )
+)
 goto :end
 
 :get
 echo Start downloading file(s) ...
 set file=%1
 echo Downloading %file%
-cmd /c curl -k -u %user%:%passwd% https://apricot.ddns.net/db/col/fs/file/%file% > %file%
+set encode='node -e "console.log(encodeURIComponent(process.argv[1]))" %file%'
+for /f "delims=" %%a in (!encode!) do (
+  set encodedname=%%a
+  cmd /c curl -k -u %user%:%passwd% https://apricot.ddns.net/db/col/fs/file/!encodedname! > %file%
+  )
 goto :end
 
 :del
 echo Start deleting file(s) ...
 set file=%1
 echo Deleting %file%
-cmd /c curl -X DELETE -k -u %user%:%passwd% https://apricot.ddns.net/db/col/fs/file/%file% | json -a -C msg
+set encode='node -e "console.log(encodeURIComponent(process.argv[1]))" %file%'
+for /f "delims=" %%a in (!encode!) do (
+  set encodedname=%%a
+  cmd /c curl -X DELETE -k -u %user%:%passwd% https://apricot.ddns.net/db/col/fs/file/!encodedname! | json -a -C msg
+  )
 goto :end
 
 :list
