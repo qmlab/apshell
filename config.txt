@@ -1,2 +1,2 @@
-user=qm
-passwd=abc
+user=
+passwd=
