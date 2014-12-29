@@ -1,5 +1,5 @@
 @echo off
-rem This is a script to upload/download/list/delete file to/from apricot
+rem This is a script to upload/download/list/delete file to/from backpack
 setlocal enabledelayedexpansion
 
 if [%1] == [] goto :usage
@@ -15,7 +15,7 @@ if exist config.txt (
 )
 
 :usage
-echo ap.cmd [get^|put^|list^|del] filename
+echo run.cmd [get^|put^|list^|del] filename
 goto :end
 
 :put
@@ -26,7 +26,7 @@ for %%f in (%files%) do (
   set encode='node -e "console.log(encodeURIComponent(process.argv[1]))" "%%~nxf"'
   for /f "delims=" %%a in (!encode!) do (
     set encodedname=%%a
-    cmd /c curl -X POST -k -u %user%:%passwd% -T %%f https://apricot.ddns.net/db/col/fs/file/!encodedname! | json -a -C msg
+    cmd /c curl -X POST -k -u %user%:%passwd% -T %%f https://backpack.ddns.net/set/fs/file/!encodedname! | json -a -C msg
   )
 )
 goto :end
@@ -38,7 +38,7 @@ echo Downloading %file%
 set encode='node -e "console.log(encodeURIComponent(process.argv[1]))" %file%'
 for /f "delims=" %%a in (!encode!) do (
   set encodedname=%%a
-  cmd /c curl -k -u %user%:%passwd% https://apricot.ddns.net/db/col/fs/file/!encodedname! > %file%
+  cmd /c curl -k -u %user%:%passwd% https://backpack.ddns.net/set/fs/file/!encodedname! > %file%
   )
 goto :end
 
@@ -49,13 +49,13 @@ echo Deleting %file%
 set encode='node -e "console.log(encodeURIComponent(process.argv[1]))" %file%'
 for /f "delims=" %%a in (!encode!) do (
   set encodedname=%%a
-  cmd /c curl -X DELETE -k -u %user%:%passwd% https://apricot.ddns.net/db/col/fs/file/!encodedname! | json -a -C msg
+  cmd /c curl -X DELETE -k -u %user%:%passwd% https://backpack.ddns.net/set/fs/file/!encodedname! | json -a -C msg
   )
 goto :end
 
 :list
 echo Listing files ...
-cmd /c curl -k -u %user%:%passwd% https://apricot.ddns.net/db/col/fs/files | json -a -C filename length uploadDate
+cmd /c curl -k -u %user%:%passwd% https://backpack.ddns.net/set/fs/files | json -a -C filename length uploadDate
 goto :end
 
 
